@@ -92,6 +92,12 @@ Tests run against a temporary SQLite database, so no Postgres is needed. They ru
 | `CORS_ORIGINS` | backend | Comma-separated frontend origins allowed to call the API |
 | `VITE_API_URL` | frontend | Backend URL when the API is hosted on a different domain |
 
+## Deployment
+
+- **Frontend:** Vercel, with `frontend/` as the root directory and `VITE_API_URL` pointing at the API
+- **Backend:** Render, defined in [`render.yaml`](render.yaml); it supports long-lived WebSocket connections
+- **Database:** Neon serverless PostgreSQL
+
 ## API Endpoints
 
 | Method | Endpoint | Description |

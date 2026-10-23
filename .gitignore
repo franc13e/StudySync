@@ -5,3 +5,7 @@ __pycache__/
 dist/
 .vercel/*.db
 .pytest_cache/
+
+.vercel
+.env*
+!.env.example
