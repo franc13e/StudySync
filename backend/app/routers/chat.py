@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db, SessionLocal
 from app.models.models import User, Message, GroupMember
 from app.schemas.schemas import MessageOut
-from app.services.auth import get_current_user
+from app.services.auth import get_current_user, require_group_member
 
 router = APIRouter(tags=["chat"])
 
@@ -19,6 +19,7 @@ def get_messages(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    require_group_member(group_id, user, db)
     messages = (
         db.query(Message)
         .filter(Message.group_id == group_id)
@@ -28,7 +29,7 @@ def get_messages(
     )
     result = []
     for m in reversed(messages):
-        u = db.query(User).get(m.user_id)
+        u = db.get(User, m.user_id)
         result.append(MessageOut(
             id=m.id,
             group_id=m.group_id,
@@ -79,13 +80,13 @@ async def websocket_chat(websocket: WebSocket, group_id: int, token: str = ""):
     Connect with: ws://localhost:8000/ws/chat/{group_id}?token=JWT_TOKEN
     """
     # Validate token
-    from jose import jwt, JWTError
+    import jwt
     from app.config import settings
 
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id = payload.get("sub")
-    except (JWTError, Exception):
+        user_id = int(payload.get("sub"))
+    except (jwt.PyJWTError, TypeError, ValueError):
         await websocket.close(code=4001)
         return
 
@@ -112,8 +113,10 @@ async def websocket_chat(websocket: WebSocket, group_id: int, token: str = ""):
     try:
         while True:
             data = await websocket.receive_text()
-            payload = json.loads(data)
-            content = payload.get("content", "").strip()
+            try:
+                content = str(json.loads(data).get("content", "")).strip()
+            except (ValueError, AttributeError):
+                continue
             if not content:
                 continue
 
@@ -138,6 +141,7 @@ async def websocket_chat(websocket: WebSocket, group_id: int, token: str = ""):
                 "avatar_color": user.avatar_color,
             })
     except WebSocketDisconnect:
-        manager.disconnect(websocket, group_id)
+        pass
     finally:
+        manager.disconnect(websocket, group_id)
         db.close()

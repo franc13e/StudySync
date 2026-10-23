@@ -1,50 +1,55 @@
 # StudySync — Collaborative Study Planner
 
+[![CI](https://github.com/franc13e/StudySync/actions/workflows/ci.yml/badge.svg)](https://github.com/franc13e/StudySync/actions/workflows/ci.yml)
+
 A full-stack web app where university students create study groups, share timetables, and track study streaks with real-time group chat.
 
-**Tech Stack:** React · FastAPI · PostgreSQL · WebSockets · Tailwind CSS
+**Tech Stack:** React · Vite · Tailwind CSS · FastAPI · SQLAlchemy · PostgreSQL · WebSockets · JWT auth
 
 ---
+
+## Features
+
+- **Study groups**: create a group, share its invite code, and see who's in it
+- **Real-time group chat**: WebSocket chat with persisted message history
+- **Shared timetables**: add your classes, then see every member's schedule in one weekly grid
+- **Study streaks**: log study sessions and track current / longest streaks
+- **Focus tools**: Pomodoro timer and a quick task list on the home screen
+- **Progress stats**: weekly study hours, time by subject, and achievements
+- **Installable PWA**: works as a home-screen app with an offline-cached shell
+
+Group data (chat, members, combined timetable) is only visible to members of that group.
 
 ## Project Structure
 
 ```
-studysync/
+StudySync/
 ├── frontend/                # React (Vite + Tailwind)
-│   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/           # Route-level pages
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── services/        # API client functions
-│   │   └── context/         # Auth & app context providers
-│   ├── package.json
-│   └── vite.config.js
-├── backend/                 # FastAPI + PostgreSQL
+│   └── src/
+│       ├── pages/           # Home, Schedule, Groups, Group chat, Stats, Login, Register
+│       ├── components/      # Layout & navigation
+│       ├── hooks/           # useChat (history + WebSocket)
+│       ├── context/         # Auth context
+│       └── services/        # API client
+├── backend/                 # FastAPI
 │   ├── app/
-│   │   ├── main.py          # App entry, CORS, WebSocket
+│   │   ├── main.py          # App, CORS, router registration
+│   │   ├── config.py        # Settings from environment
 │   │   ├── database.py      # SQLAlchemy engine + session
-│   │   ├── config.py        # Environment config
-│   │   ├── models/          # SQLAlchemy ORM models
+│   │   ├── models/          # ORM models
 │   │   ├── schemas/         # Pydantic request/response schemas
-│   │   ├── routers/         # API route handlers
-│   │   └── services/        # Business logic layer
-│   ├── migrations/          # Alembic migrations
-│   ├── requirements.txt
-│   └── alembic.ini
-├── docker-compose.yml       # PostgreSQL + app containers
-└── README.md
+│   │   ├── routers/         # auth, groups, schedule, streaks, chat
+│   │   └── services/        # Password hashing, JWT, membership checks
+│   └── tests/               # API + WebSocket tests (pytest)
+└── docker-compose.yml       # PostgreSQL + backend for local development
 ```
 
-## Quick Start
+## Running Locally
 
 ### 1. Database (PostgreSQL)
 
 ```bash
-# Option A: Docker (recommended)
 docker-compose up -d db
-
-# Option B: Local PostgreSQL
-createdb studysync
 ```
 
 ### 2. Backend
@@ -53,20 +58,12 @@ createdb studysync
 cd backend
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# Set environment variables (or create .env)
-export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/studysync
-export SECRET_KEY=your-secret-key-here
-
-# Run migrations
-alembic upgrade head
-
-# Start server
+pip install -r requirements-dev.txt
+cp .env.example .env            # then set SECRET_KEY
 uvicorn app.main:app --reload --port 8000
 ```
 
-API docs at: http://localhost:8000/docs
+Tables are created automatically on startup. API docs: http://localhost:8000/docs
 
 ### 3. Frontend
 
@@ -76,13 +73,24 @@ npm install
 npm run dev
 ```
 
-App at: http://localhost:5173
+App at http://localhost:5173. The Vite dev server proxies `/api` and `/ws` to the backend.
 
-## Deployment
+### Tests
 
-- **Frontend:** Vercel (`vercel deploy`)
-- **Backend:** Railway or Render (connect GitHub repo, set env vars)
-- **Database:** Railway PostgreSQL or Supabase (free tier)
+```bash
+cd backend && pytest
+```
+
+Tests run against a temporary SQLite database, so no Postgres is needed. They run on every push via GitHub Actions together with the frontend build.
+
+## Configuration
+
+| Variable | Where | Description |
+|---|---|---|
+| `DATABASE_URL` | backend | PostgreSQL connection string |
+| `SECRET_KEY` | backend | Secret used to sign JWTs. Use a long random value in production |
+| `CORS_ORIGINS` | backend | Comma-separated frontend origins allowed to call the API |
+| `VITE_API_URL` | frontend | Backend URL when the API is hosted on a different domain |
 
 ## API Endpoints
 
@@ -90,16 +98,16 @@ App at: http://localhost:5173
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Create account |
 | POST | `/api/auth/login` | Get JWT token |
-| GET | `/api/users/me` | Current user profile |
+| GET | `/api/auth/me` | Current user profile |
 | GET | `/api/groups` | List user's groups |
 | POST | `/api/groups` | Create a group |
-| POST | `/api/groups/{id}/join` | Join a group |
-| GET | `/api/groups/{id}/members` | Group members |
+| POST | `/api/groups/join` | Join a group with an invite code |
+| GET | `/api/groups/{id}/members` | Group members *(members only)* |
 | GET | `/api/schedule` | Get user's timetable |
 | POST | `/api/schedule` | Add schedule block |
 | DELETE | `/api/schedule/{id}` | Remove block |
-| GET | `/api/schedule/group/{id}` | Combined group timetable |
+| GET | `/api/schedule/group/{id}` | Combined group timetable *(members only)* |
 | GET | `/api/streaks/me` | Get study streak |
 | POST | `/api/streaks/log` | Log a study session |
-| GET | `/api/messages/{group_id}` | Chat history |
-| WS | `/ws/chat/{group_id}` | Real-time chat |
+| GET | `/api/messages/{group_id}` | Chat history *(members only)* |
+| WS | `/ws/chat/{group_id}?token=…` | Real-time chat *(members only)* |

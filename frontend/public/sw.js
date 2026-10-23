@@ -1,4 +1,4 @@
-const CACHE_NAME = "studysync-v1";
+const CACHE_NAME = "studysync-v2";
 const STATIC_ASSETS = ["/", "/index.html"];
 
 self.addEventListener("install", (event) => {
@@ -19,6 +19,10 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  // Only cache the app shell and static assets — never API responses,
+  // which contain private data (chats, timetables).
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api")) return;
 
   event.respondWith(
     fetch(event.request)

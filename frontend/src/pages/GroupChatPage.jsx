@@ -11,7 +11,7 @@ const TABS = [
   { id: "members", label: "Members", icon: Users },
 ];
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const HOURS = Array.from({ length: 14 }, (_, i) => i + 7); // 7 AM to 8 PM
 
 function ChatTab({ groupId }) {
@@ -42,23 +42,21 @@ function ChatTab({ groupId }) {
             <p className="text-chocolate text-sm mt-2">No messages yet — say hi!</p>
           </div>
         )}
-        {messages.map((msg, i) => {
+        {messages.map((msg) => {
           const isMe = msg.user_id === user?.id;
           return (
-            <div key={i} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+            <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[75%] rounded-squircle px-4 py-2.5 text-sm ${
-                  isMe
-                    ? "bg-espresso text-white"
-                    : "bg-butter border border-border"
+                  isMe ? "bg-espresso text-white" : "bg-canvas border border-border"
                 }`}
               >
                 {!isMe && (
-                  <p className="text-xs font-semibold text-sage mb-0.5">
+                  <p className="text-xs font-semibold mb-0.5" style={{ color: msg.avatar_color }}>
                     {msg.username}
                   </p>
                 )}
-                <p>{msg.content}</p>
+                <p className="break-words">{msg.content}</p>
               </div>
             </div>
           );
@@ -76,6 +74,7 @@ function ChatTab({ groupId }) {
         />
         <button
           onClick={handleSend}
+          aria-label="Send message"
           className="w-10 h-10 rounded-full bg-espresso text-white flex items-center justify-center hover:opacity-90 transition"
         >
           <Send size={16} />
@@ -99,41 +98,31 @@ function TimetableTab({ groupId }) {
 
   if (loading) return <p className="text-center text-chocolate text-sm py-8">Loading…</p>;
 
-  const palette = ["bg-sage/40", "bg-sunset/40", "bg-petal/40", "bg-lavender/40"];
-
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto p-2">
       <div className="min-w-[600px] grid grid-cols-8 text-xs">
-        {/* Header */}
-        <div className="p-2 font-semibold text-chocolate" />
+        <div className="p-2" />
         {DAYS.map((d) => (
-          <div key={d} className="p-2 font-semibold text-center text-chocolate">
-            {d.slice(0, 3)}
-          </div>
+          <div key={d} className="p-2 font-semibold text-center text-chocolate">{d}</div>
         ))}
 
-        {/* Rows */}
         {HOURS.map((hour) => (
           <div key={hour} className="contents">
-            <div className="p-2 text-right text-chocolate/60 font-medium">
-              {hour}:00
-            </div>
-            {DAYS.map((day) => {
+            <div className="p-2 text-right text-chocolate/60 font-medium">{hour}:00</div>
+            {DAYS.map((d, dayIndex) => {
               const cell = blocks.filter(
-                (b) => b.day_of_week === day && b.start_hour <= hour && b.end_hour > hour
+                (b) => b.day_of_week === dayIndex && b.start_hour <= hour && b.start_hour + b.duration > hour
               );
               return (
-                <div
-                  key={day}
-                  className="border border-border/40 min-h-[32px] p-0.5 relative"
-                >
-                  {cell.map((b, i) => (
+                <div key={d} className="border border-border/40 min-h-[32px] p-0.5 space-y-0.5">
+                  {cell.map((b) => (
                     <div
-                      key={i}
-                      className={`${palette[i % palette.length]} rounded-lg px-1.5 py-0.5 text-[10px] font-medium truncate`}
-                      title={`${b.subject} — ${b.username}`}
+                      key={b.id}
+                      className="rounded-lg px-1.5 py-0.5 text-[10px] font-medium truncate text-espresso"
+                      style={{ backgroundColor: `${b.color}55` }}
+                      title={`${b.label} — ${b.username}`}
                     >
-                      {b.subject}
+                      {b.label}
                     </div>
                   ))}
                 </div>
@@ -144,7 +133,7 @@ function TimetableTab({ groupId }) {
       </div>
       {blocks.length === 0 && (
         <p className="text-center text-chocolate text-sm py-6">
-          No schedule blocks yet. Add some in the Schedule tab.
+          No classes yet. Members can add theirs on the Schedule page.
         </p>
       )}
     </div>
@@ -159,19 +148,16 @@ function MembersTab({ groupId }) {
   }, [groupId]);
 
   return (
-    <div className="space-y-2 py-2">
+    <div className="space-y-2 p-3">
       {members.map((m) => (
-        <div
-          key={m.id}
-          className="flex items-center gap-3 bg-butter border border-border rounded-squircle p-3"
-        >
-          <div className="w-9 h-9 rounded-full bg-sage/30 flex items-center justify-center text-sm font-bold text-sage">
+        <div key={m.id} className="flex items-center gap-3 bg-canvas border border-border rounded-squircle p-3">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
+            style={{ backgroundColor: m.avatar_color }}
+          >
             {m.username?.[0]?.toUpperCase()}
           </div>
-          <div>
-            <p className="font-semibold text-sm">{m.username}</p>
-            <p className="text-xs text-chocolate">{m.email}</p>
-          </div>
+          <p className="font-semibold text-sm">{m.username}</p>
         </div>
       ))}
       {members.length === 0 && (
@@ -181,30 +167,41 @@ function MembersTab({ groupId }) {
   );
 }
 
-export default function GroupPage() {
+export default function GroupChatPage() {
   const { groupId } = useParams();
   const [tab, setTab] = useState("chat");
+  const [group, setGroup] = useState(null);
+
+  useEffect(() => {
+    groupsApi
+      .list()
+      .then((all) => setGroup(all.find((g) => String(g.id) === groupId) ?? null))
+      .catch(console.error);
+  }, [groupId]);
 
   return (
     <div className="py-4 space-y-4">
-      {/* Back link */}
       <Link
-        to="/"
+        to="/groups"
         className="inline-flex items-center gap-1.5 text-chocolate text-sm font-medium hover:text-espresso transition"
       >
-        <ArrowLeft size={16} /> Back
+        <ArrowLeft size={16} /> Groups
       </Link>
 
-      {/* Tabs */}
+      {group && (
+        <div>
+          <h1 className="font-display text-2xl font-bold">{group.name}</h1>
+          <p className="text-chocolate text-sm">{group.subject} · {group.member_count} members</p>
+        </div>
+      )}
+
       <div className="flex gap-2">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition ${
-              tab === id
-                ? "bg-espresso text-white"
-                : "bg-inactive text-chocolate hover:bg-border"
+              tab === id ? "bg-espresso text-white" : "bg-inactive text-chocolate hover:bg-border"
             }`}
           >
             <Icon size={14} />
@@ -213,7 +210,6 @@ export default function GroupPage() {
         ))}
       </div>
 
-      {/* Content */}
       <div className="bg-butter border border-border rounded-squircle-lg overflow-hidden">
         {tab === "chat" && <ChatTab groupId={groupId} />}
         {tab === "timetable" && <TimetableTab groupId={groupId} />}

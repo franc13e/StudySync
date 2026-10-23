@@ -3,16 +3,17 @@ import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import DashboardPage from "./pages/DashboardPage";
-import GroupPage from "./pages/GroupPage";
+import HomePage from "./pages/HomePage";
 import SchedulePage from "./pages/SchedulePage";
-import StreakPage from "./pages/StreakPage";
+import GroupsPage from "./pages/GroupsPage";
+import GroupChatPage from "./pages/GroupChatPage";
+import StatsPage from "./pages/StatsPage";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading)
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-canvas">
         <div className="w-10 h-10 rounded-full border-4 border-sunset border-t-transparent animate-spin" />
       </div>
     );
@@ -30,10 +31,11 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <Routes>
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/groups/:groupId" element={<GroupPage />} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/schedule" element={<SchedulePage />} />
-                <Route path="/streaks" element={<StreakPage />} />
+                <Route path="/groups" element={<GroupsPage />} />
+                <Route path="/groups/:groupId/chat" element={<GroupChatPage />} />
+                <Route path="/stats" element={<StatsPage />} />
               </Routes>
             </Layout>
           </ProtectedRoute>

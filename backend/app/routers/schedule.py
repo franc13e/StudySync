@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import User, Schedule, GroupMember
 from app.schemas.schemas import ScheduleCreate, ScheduleOut
-from app.services.auth import get_current_user
+from app.services.auth import get_current_user, require_group_member
 
 router = APIRouter(prefix="/api/schedule", tags=["schedule"])
 
@@ -37,6 +37,7 @@ def delete_block(block_id: int, user: User = Depends(get_current_user), db: Sess
 @router.get("/group/{group_id}", response_model=list[ScheduleOut])
 def get_group_schedule(group_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get combined timetable for all members of a group."""
+    require_group_member(group_id, user, db)
     member_ids = [
         m.user_id
         for m in db.query(GroupMember).filter(GroupMember.group_id == group_id).all()
@@ -44,7 +45,7 @@ def get_group_schedule(group_id: int, user: User = Depends(get_current_user), db
     blocks = db.query(Schedule).filter(Schedule.user_id.in_(member_ids)).all()
     result = []
     for b in blocks:
-        u = db.query(User).get(b.user_id)
+        u = db.get(User, b.user_id)
         result.append(ScheduleOut(
             username=u.username if u else "",
             **{c.name: getattr(b, c.name) for c in Schedule.__table__.columns},

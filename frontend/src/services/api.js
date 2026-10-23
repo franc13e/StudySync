@@ -29,10 +29,8 @@ async function request(path, options = {}) {
 export const auth = {
   register: (data) =>
     request("/api/auth/register", { method: "POST", body: JSON.stringify(data) }),
-
   login: (data) =>
     request("/api/auth/login", { method: "POST", body: JSON.stringify(data) }),
-
   me: () => request("/api/auth/me"),
 };
 
@@ -70,8 +68,10 @@ export const messages = {
 // ── WebSocket ─────────────────────────────────────────────────
 export function connectChat(groupId, onMessage) {
   const token = getToken();
-  const wsUrl = API_URL.replace("http", "ws");
-  const ws = new WebSocket(`${wsUrl}/ws/chat/${groupId}?token=${token}`);
+  const wsBase = API_URL
+    ? API_URL.replace(/^http/, "ws")
+    : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
+  const ws = new WebSocket(`${wsBase}/ws/chat/${groupId}?token=${token}`);
 
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import User, Group, GroupMember
 from app.schemas.schemas import GroupCreate, GroupOut, GroupJoin, UserOut
-from app.services.auth import get_current_user
+from app.services.auth import get_current_user, require_group_member
 
 router = APIRouter(prefix="/api/groups", tags=["groups"])
 
@@ -88,6 +88,7 @@ def join_group(data: GroupJoin, user: User = Depends(get_current_user), db: Sess
 
 @router.get("/{group_id}/members", response_model=list[UserOut])
 def get_members(group_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    require_group_member(group_id, user, db)
     members = (
         db.query(User)
         .join(GroupMember)
