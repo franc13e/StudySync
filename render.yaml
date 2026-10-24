@@ -16,4 +16,4 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: CORS_ORIGINS
-        value: https://studysync-franc13es-projects.vercel.app
+        value: https://studysync-tau-mocha.vercel.app,https://studysync-franc13es-projects.vercel.app
