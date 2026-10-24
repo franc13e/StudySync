@@ -3,7 +3,8 @@ node_modules/
 __pycache__/
 *.pyc
 dist/
-.vercel/*.db
+.vercel/
+*.db
 .pytest_cache/
 
 .vercel
