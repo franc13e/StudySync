@@ -4,7 +4,9 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.config import settings
 
 # psycopg3 uses "postgresql+psycopg" driver
-db_url = settings.DATABASE_URL
+db_url = settings.DATABASE_URL.strip()
+if not db_url:
+    raise RuntimeError("DATABASE_URL is not set. Add your PostgreSQL connection string to the environment.")
 if db_url.startswith("postgres://"):
     db_url = "postgresql://" + db_url[len("postgres://"):]
 db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
