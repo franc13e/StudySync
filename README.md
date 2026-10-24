@@ -4,6 +4,9 @@
 
 A full-stack web app where university students create study groups, share timetables, and track study streaks with real-time group chat.
 
+**Live demo:** https://studysync-tau-mocha.vercel.app  
+_The API runs on Render's free tier, so the first request after a quiet spell can take up to a minute while it wakes up._
+
 **Tech Stack:** React · Vite · Tailwind CSS · FastAPI · SQLAlchemy · PostgreSQL · WebSockets · JWT auth
 
 ---
