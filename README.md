@@ -11,6 +11,15 @@ _The API runs on Render's free tier, so the first request after a quiet spell ca
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/home.png" width="240" alt="Home with study streak, Pomodoro timer and tasks">
+  <img src="docs/screenshots/groups.png" width="240" alt="Study groups with invite codes">
+  <img src="docs/screenshots/chat.png" width="240" alt="Real-time group chat">
+  <img src="docs/screenshots/stats.png" width="240" alt="Weekly study hours and time by subject">
+</p>
+
 ## Features
 
 - **Study groups**: create a group, share its invite code, and see who's in it
