@@ -3,12 +3,13 @@ import { Plus, Trash2, Users } from "lucide-react";
 import { schedule as scheduleApi, groups as groupsApi } from "../services/api";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// Theme colours a class can be tagged with (stored as hex on the block).
 const COLORS = [
-  { border: "border-l-sunset", badge: "bg-sunset/30 text-espresso" },
-  { border: "border-l-sage", badge: "bg-sage/30 text-espresso" },
-  { border: "border-l-petal", badge: "bg-petal/60 text-espresso" },
-  { border: "border-l-lavender", badge: "bg-lavender/60 text-espresso" },
-  { border: "border-l-chocolate", badge: "bg-chocolate/20 text-espresso" },
+  { name: "Sunset", hex: "#FFC285" },
+  { name: "Sage", hex: "#A2C997" },
+  { name: "Petal", hex: "#FFD2D7" },
+  { name: "Lavender", hex: "#C2C9EC" },
+  { name: "Cocoa", hex: "#C9B3A6" },
 ];
 
 export default function SchedulePage() {
@@ -16,7 +17,7 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [activeDay, setActiveDay] = useState((new Date().getDay() + 6) % 7);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ label: "", day_of_week: 0, start_hour: 9, duration: 1, color: "#F59E0B" });
+  const [form, setForm] = useState({ label: "", day_of_week: 0, start_hour: 9, duration: 1, color: COLORS[0].hex });
   const [myGroups, setMyGroups] = useState([]);
   const [viewGroup, setViewGroup] = useState(null); // null = my schedule
 
@@ -50,7 +51,7 @@ export default function SchedulePage() {
       const b = await scheduleApi.add({ ...form, day_of_week: activeDay });
       setBlocks((prev) => [...prev, b]);
       setShowAdd(false);
-      setForm({ label: "", day_of_week: 0, start_hour: 9, duration: 1, color: "#F59E0B" });
+      setForm({ label: "", day_of_week: 0, start_hour: 9, duration: 1, color: COLORS[0].hex });
     } catch (err) {
       console.error(err);
     }
@@ -135,6 +136,22 @@ export default function SchedulePage() {
               ))}
             </select>
           </div>
+          <div className="flex items-center gap-2">
+            {COLORS.map((c) => (
+              <button
+                key={c.hex}
+                type="button"
+                title={c.name}
+                aria-label={`${c.name} colour`}
+                aria-pressed={form.color === c.hex}
+                onClick={() => setForm({ ...form, color: c.hex })}
+                className={`w-7 h-7 rounded-full border-2 transition ${
+                  form.color === c.hex ? "border-espresso scale-110" : "border-transparent"
+                }`}
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
           <div className="flex gap-2">
             <button onClick={addBlock} className="bg-sage text-white font-semibold rounded-full px-5 py-2 text-sm">Add</button>
             <button onClick={() => setShowAdd(false)} className="text-chocolate text-sm font-medium">Cancel</button>
@@ -152,12 +169,12 @@ export default function SchedulePage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {todayBlocks.map((block, idx) => {
-            const c = COLORS[idx % COLORS.length];
+          {todayBlocks.map((block) => {
             return (
               <div
                 key={block.id}
-                className={`bg-butter border border-border ${c.border} border-l-4 rounded-2xl p-4 flex items-center justify-between`}
+                className="bg-butter border border-border border-l-4 rounded-2xl p-4 flex items-center justify-between"
+                style={{ borderLeftColor: block.color }}
               >
                 <div>
                   <h4 className="font-bold">{block.label}</h4>
@@ -167,13 +184,18 @@ export default function SchedulePage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-bold px-3 py-1 rounded-xl ${c.badge}`}>
+                  <span
+                    className="text-sm font-bold px-3 py-1 rounded-xl text-espresso"
+                    style={{ backgroundColor: `${block.color}66` }}
+                  >
                     {block.start_hour}:00
                   </span>
-                  <button onClick={() => removeBlock(block.id)}
-                    className="p-1.5 rounded-full hover:bg-petal/30 transition">
-                    <Trash2 size={14} className="text-chocolate" />
-                  </button>
+                  {!viewGroup && (
+                    <button onClick={() => removeBlock(block.id)} aria-label={`Delete ${block.label}`}
+                      className="p-1.5 rounded-full hover:bg-petal/30 transition">
+                      <Trash2 size={14} className="text-chocolate" />
+                    </button>
+                  )}
                 </div>
               </div>
             );
