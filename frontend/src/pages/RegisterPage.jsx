@@ -48,14 +48,16 @@ export default function RegisterPage() {
           <div>
             <label className="block text-sm font-semibold mb-1.5">Username</label>
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required
+              minLength={2} maxLength={30} pattern="[A-Za-z0-9_.\-]+" title="2–30 letters, numbers, dots, dashes or underscores"
               className="w-full bg-canvas border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50"
               placeholder="studybuddy42" />
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1.5">Password</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
+              minLength={8} maxLength={128} autoComplete="new-password"
               className="w-full bg-canvas border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50"
-              placeholder="••••••••" />
+              placeholder="At least 8 characters" />
           </div>
           <button type="submit" disabled={loading}
             className="w-full bg-espresso text-white font-semibold rounded-full py-3 text-sm hover:opacity-90 transition disabled:opacity-60">

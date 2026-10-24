@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.models import User, StudyLog
-from app.schemas.schemas import StudyLogCreate, StudyLogOut, StreakOut
+from app.schemas.schemas import StudyLogCreate, StudyLogOut, StreakOut, MINUTES_PER_DAY
 from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/api/streaks", tags=["streaks"])
@@ -76,7 +76,7 @@ def log_study(data: StudyLogCreate, user: User = Depends(get_current_user), db: 
         .first()
     )
     if existing:
-        existing.duration_minutes += data.duration_minutes
+        existing.duration_minutes = min(existing.duration_minutes + data.duration_minutes, MINUTES_PER_DAY)
         existing.note = data.note or existing.note
         db.commit()
         db.refresh(existing)

@@ -83,3 +83,69 @@ def test_websocket_rejects_non_members(client, make_user):
         with client.websocket_connect(f"/ws/chat/{gid}?token={outsider_token}") as ws:
             ws.receive_text()
     assert exc.value.code == 4003
+
+
+@pytest.mark.parametrize("payload", [
+    {"email": "a@example.com", "username": "", "password": "long-enough-1"},
+    {"email": "b@example.com", "username": "has space", "password": "long-enough-1"},
+    {"email": "c@example.com", "username": "x" * 31, "password": "long-enough-1"},
+    {"email": "d@example.com", "username": "shortpw", "password": "short"},
+])
+def test_registration_validation(client, payload):
+    assert client.post("/api/auth/register", json=payload).status_code == 422
+
+
+def test_members_do_not_expose_email(client, make_user):
+    owner, _, _ = make_user()
+    friend, _, _ = make_user()
+    group = client.post("/api/groups", json={"name": "Privacy"}, headers=owner).json()
+    client.post("/api/groups/join", json={"invite_code": group["invite_code"].lower()}, headers=friend)
+
+    listed = client.get("/api/groups", headers=friend).json()[0]["members"]
+    members = client.get(f"/api/groups/{group['id']}/members", headers=friend).json()
+    assert len(members) == 2  # lower-case invite code still worked
+    assert all("email" not in m for m in listed + members)
+    assert "email" in client.get("/api/auth/me", headers=friend).json()  # own profile still has it
+
+
+@pytest.mark.parametrize("payload", [
+    {"label": "X", "day_of_week": 7, "start_hour": 9, "duration": 1},
+    {"label": "X", "day_of_week": 0, "start_hour": 24, "duration": 1},
+    {"label": "X", "day_of_week": 0, "start_hour": 9, "duration": 0},
+    {"label": "X", "day_of_week": 0, "start_hour": 22, "duration": 3},
+    {"label": "  ", "day_of_week": 0, "start_hour": 9, "duration": 1},
+    {"label": "X", "day_of_week": 0, "start_hour": 9, "duration": 1, "color": "red;x:y"},
+])
+def test_schedule_validation(client, make_user, payload):
+    me, _, _ = make_user()
+    assert client.post("/api/schedule", headers=me, json=payload).status_code == 422
+
+
+def test_group_and_log_validation(client, make_user):
+    me, _, _ = make_user()
+    assert client.post("/api/groups", json={"name": ""}, headers=me).status_code == 422
+    assert client.post("/api/groups", json={"name": "x" * 101}, headers=me).status_code == 422
+    assert client.post("/api/streaks/log", headers=me, json={"duration_minutes": -5}).status_code == 422
+    assert client.post("/api/streaks/log", headers=me, json={"duration_minutes": 30, "logged_date": "2099-01-01"}).status_code == 422
+
+
+def test_daily_study_time_is_capped(client, make_user):
+    me, _, _ = make_user()
+    for _ in range(3):
+        client.post("/api/streaks/log", headers=me, json={"duration_minutes": 600})
+    assert client.get("/api/streaks/me", headers=me).json()["this_week"][-1]["duration_minutes"] == 1440
+
+
+def test_message_history_limit_is_bounded(client, make_user):
+    me, _, _ = make_user()
+    gid = client.post("/api/groups", json={"name": "Limits"}, headers=me).json()["id"]
+    assert client.get(f"/api/messages/{gid}?limit=100000", headers=me).status_code == 422
+
+
+def test_overlong_chat_messages_are_dropped(client, make_user):
+    me, token, _ = make_user()
+    gid = client.post("/api/groups", json={"name": "Long"}, headers=me).json()["id"]
+    with client.websocket_connect(f"/ws/chat/{gid}?token={token}") as ws:
+        ws.send_json({"content": "x" * 2001})
+        ws.send_json({"content": "short"})
+        assert ws.receive_json()["content"] == "short"

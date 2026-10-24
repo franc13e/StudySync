@@ -166,7 +166,7 @@ export default function GroupsPage() {
         <div className="bg-butter border border-border rounded-3xl p-5 space-y-3">
           <h3 className="font-semibold">Create a study group</h3>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Group name"
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Group name" maxLength={100}
             className="w-full bg-canvas border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50" />
           <select value={subject} onChange={(e) => setSubject(e.target.value)}
             className="w-full bg-canvas border border-border rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50">
@@ -186,7 +186,7 @@ export default function GroupsPage() {
         <div className="bg-butter border border-border rounded-3xl p-5 space-y-3">
           <h3 className="font-semibold">Join with invite code</h3>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Paste invite code"
+          <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Paste invite code" maxLength={16}
             className="w-full bg-canvas border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50" />
           <div className="flex gap-2">
             <button onClick={joinGroup} className="bg-espresso text-white font-semibold rounded-full px-5 py-2 text-sm">Join</button>

@@ -120,10 +120,10 @@ export default function SchedulePage() {
       {showAdd && (
         <div className="bg-butter border border-border rounded-3xl p-5 space-y-3">
           <h3 className="font-semibold text-sm">Add a class</h3>
-          <input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })}
+          <input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} maxLength={100}
             placeholder="Subject name" className="w-full bg-canvas border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50" />
           <div className="grid grid-cols-2 gap-2">
-            <select value={form.start_hour} onChange={(e) => setForm({ ...form, start_hour: +e.target.value })}
+            <select value={form.start_hour} onChange={(e) => { const start = +e.target.value; setForm({ ...form, start_hour: start, duration: Math.min(form.duration, 24 - start) }); }}
               className="bg-canvas border border-border rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50">
               {Array.from({ length: 15 }, (_, i) => i + 7).map((h) => (
                 <option key={h} value={h}>{h}:00</option>
@@ -131,7 +131,7 @@ export default function SchedulePage() {
             </select>
             <select value={form.duration} onChange={(e) => setForm({ ...form, duration: +e.target.value })}
               className="bg-canvas border border-border rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50">
-              {[1, 2, 3, 4].map((d) => (
+              {[1, 2, 3, 4].filter((d) => form.start_hour + d <= 24).map((d) => (
                 <option key={d} value={d}>{d} hr{d > 1 ? "s" : ""}</option>
               ))}
             </select>

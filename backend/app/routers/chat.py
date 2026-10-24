@@ -1,11 +1,11 @@
 import json
 from datetime import datetime
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
 from app.database import get_db, SessionLocal
 from app.models.models import User, Message, GroupMember
-from app.schemas.schemas import MessageOut
+from app.schemas.schemas import MAX_MESSAGE_LENGTH, MessageOut
 from app.services.auth import get_current_user, require_group_member
 
 router = APIRouter(tags=["chat"])
@@ -15,7 +15,7 @@ router = APIRouter(tags=["chat"])
 @router.get("/api/messages/{group_id}", response_model=list[MessageOut])
 def get_messages(
     group_id: int,
-    limit: int = 50,
+    limit: int = Query(50, ge=1, le=200),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -117,7 +117,7 @@ async def websocket_chat(websocket: WebSocket, group_id: int, token: str = ""):
                 content = str(json.loads(data).get("content", "")).strip()
             except (ValueError, AttributeError):
                 continue
-            if not content:
+            if not content or len(content) > MAX_MESSAGE_LENGTH:
                 continue
 
             # Persist message

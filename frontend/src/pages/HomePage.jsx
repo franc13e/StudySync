@@ -284,7 +284,8 @@ export default function HomePage() {
   }, []);
 
   const handlePomodoroComplete = useCallback(() => {
-    streaksApi.log({ duration_minutes: 25 }).then(setStreak).catch(() => {});
+    // Logging returns the single day's entry; re-fetch the full streak summary for the cards.
+    streaksApi.log({ duration_minutes: 25 }).then(() => streaksApi.me()).then(setStreak).catch(() => {});
   }, []);
 
   return (

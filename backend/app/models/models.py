@@ -1,4 +1,10 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
+
+
+def utcnow() -> datetime:
+    """Naive UTC timestamp (the columns are timezone-naive)."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, Date,
     ForeignKey, Text, UniqueConstraint
@@ -15,7 +21,7 @@ class User(Base):
     username = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     avatar_color = Column(String(7), default="#6366F1")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     memberships = relationship("GroupMember", back_populates="user")
     schedules = relationship("Schedule", back_populates="user")
@@ -32,7 +38,7 @@ class Group(Base):
     color = Column(String(7), default="#6366F1")
     invite_code = Column(String(8), unique=True, index=True)
     created_by = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     members = relationship("GroupMember", back_populates="group")
     messages = relationship("Message", back_populates="group")
@@ -44,7 +50,7 @@ class GroupMember(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
-    joined_at = Column(DateTime, default=datetime.utcnow)
+    joined_at = Column(DateTime, default=utcnow)
 
     user = relationship("User", back_populates="memberships")
     group = relationship("Group", back_populates="members")
@@ -64,7 +70,7 @@ class Schedule(Base):
     start_hour = Column(Integer, nullable=False)    # 0-23
     duration = Column(Integer, nullable=False)      # hours
     color = Column(String(7), default="#6366F1")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     user = relationship("User", back_populates="schedules")
 
@@ -76,7 +82,7 @@ class Message(Base):
     group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     group = relationship("Group", back_populates="messages")
     user = relationship("User", back_populates="messages")
