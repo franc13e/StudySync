@@ -1,4 +1,4 @@
-# StudySync — Collaborative Study Planner
+# StudySync: Collaborative Study Planner
 
 [![CI](https://github.com/franc13e/StudySync/actions/workflows/ci.yml/badge.svg)](https://github.com/franc13e/StudySync/actions/workflows/ci.yml)
 
