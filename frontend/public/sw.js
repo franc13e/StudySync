@@ -1,4 +1,4 @@
-const CACHE_NAME = "studysync-v2";
+const CACHE_NAME = "studysync-v3";
 const STATIC_ASSETS = ["/", "/manifest.json", "/favicon.svg", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
