@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Flame, Timer, Star, BookOpen, CheckCircle2, Sparkles } from "lucide-react";
 import { streaks as streaksApi, schedule as scheduleApi } from "../services/api";
+import Glyph, { InlineGlyph } from "../components/Glyph";
+import { subjectIcon } from "../components/subjectIcons";
 
 const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 
 const ACHIEVEMENTS = [
-  { emoji: "🔥", name: "Warrior", desc: "7 day streak", threshold: 7, field: "streak" },
-  { emoji: "⏱️", name: "Marathon", desc: "50 tasks done", threshold: 50, field: "total" },
-  { emoji: "🌟", name: "Rising Star", desc: "3 day streak", threshold: 3, field: "streak" },
-  { emoji: "📚", name: "Bookworm", desc: "10 hours studied", threshold: 10, field: "hours" },
+  { icon: Flame, tone: "sunset", name: "Warrior", desc: "7 day streak", threshold: 7, field: "streak" },
+  { icon: Timer, tone: "lavender", name: "Marathon", desc: "50 tasks done", threshold: 50, field: "total" },
+  { icon: Star, tone: "petal", name: "Rising Star", desc: "3 day streak", threshold: 3, field: "streak" },
+  { icon: BookOpen, tone: "sage", name: "Bookworm", desc: "10 hours studied", threshold: 10, field: "hours" },
 ];
 
 export default function StatsPage() {
@@ -61,29 +64,28 @@ export default function StatsPage() {
     .map(([name, hours]) => ({ name, pct: Math.round((hours / totalSubjectHours) * 100) }));
 
   const SUBJECT_COLORS = ["bg-lavender", "bg-sunset", "bg-sage", "bg-petal"];
-  const SUBJECT_ICONS = { Mathematics: "📐", "Computer Science": "💻", Biology: "🧬", History: "📜" };
 
   return (
     <div className="py-6 space-y-5">
       <div>
         <h1 className="font-display font-extrabold text-2xl">My Progress</h1>
-        <p className="text-chocolate text-sm">You're doing amazing, {user?.username} ✨</p>
+        <p className="text-chocolate text-sm">You're doing amazing, {user?.username} <InlineGlyph icon={Sparkles} tone="sunset" /></p>
       </div>
 
       {/* Three stat cards */}
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-butter border border-border rounded-2xl p-4 text-center">
-          <p className="text-2xl">🔥</p>
+          <Glyph icon={Flame} tone="sunset" size="md" />
           <p className="font-display font-extrabold text-2xl mt-1">{currentStreak}</p>
           <p className="text-xs text-chocolate">days</p>
         </div>
         <div className="bg-butter border border-border rounded-2xl p-4 text-center">
-          <p className="text-2xl">✅</p>
+          <Glyph icon={CheckCircle2} tone="sage" size="md" />
           <p className="font-display font-extrabold text-2xl mt-1">{totalDays}</p>
           <p className="text-xs text-chocolate">total</p>
         </div>
         <div className="bg-butter border border-border rounded-2xl p-4 text-center">
-          <p className="text-2xl">⏱️</p>
+          <Glyph icon={Timer} tone="lavender" size="md" />
           <p className="font-display font-extrabold text-2xl mt-1">{totalHours}</p>
           <p className="text-xs text-chocolate">hours</p>
         </div>
@@ -119,7 +121,7 @@ export default function StatsPage() {
           <div className="space-y-3">
             {subjects.map((s, i) => (
               <div key={s.name} className="flex items-center gap-3">
-                <span className="text-lg w-6 text-center">{SUBJECT_ICONS[s.name] || "📖"}</span>
+                <Glyph {...subjectIcon(s.name)} size="sm" />
                 <div className="flex-1">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-sm font-semibold">{s.name}</span>
@@ -153,7 +155,7 @@ export default function StatsPage() {
                   unlocked ? "" : "opacity-40 grayscale"
                 }`}
               >
-                <span className="text-3xl">{a.emoji}</span>
+                <Glyph icon={a.icon} tone={a.tone} size="lg" />
                 <p className="text-xs font-bold mt-1">{a.name}</p>
                 <p className="text-[10px] text-chocolate">{a.desc}</p>
               </div>

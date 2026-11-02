@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Send, Users, CalendarDays, MessageCircle } from "lucide-react";
 import { groups as groupsApi, schedule as scheduleApi } from "../services/api";
 import { useChat } from "../hooks/useChat";
+import Glyph from "../components/Glyph";
 import { useAuth } from "../context/AuthContext";
 
 const TABS = [
@@ -38,7 +39,7 @@ function ChatTab({ groupId }) {
         )}
         {!loading && messages.length === 0 && (
           <div className="text-center py-12">
-            <span className="text-3xl">💬</span>
+            <Glyph icon={MessageCircle} tone="lavender" size="lg" />
             <p className="text-chocolate text-sm mt-2">No messages yet — say hi!</p>
           </div>
         )}

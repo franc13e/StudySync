@@ -1,13 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Sprout } from "lucide-react";
 import { groups as groupsApi } from "../services/api";
-
-const SUBJECT_ICONS = {
-  Mathematics: "📐", Math: "📐", Biology: "🧬", History: "📜",
-  "Computer Science": "💻", CS: "💻", Physics: "⚛️", Chemistry: "🧪",
-  General: "📚", default: "📖",
-};
+import Glyph, { InlineGlyph } from "../components/Glyph";
+import { subjectIcon } from "../components/subjectIcons";
 
 function AvatarStack({ members, max = 5 }) {
   const shown = members.slice(0, max);
@@ -34,13 +30,11 @@ function AvatarStack({ members, max = 5 }) {
 }
 
 function GroupCard({ group }) {
-  const icon = SUBJECT_ICONS[group.subject] || SUBJECT_ICONS.default;
+  const { icon, tone } = subjectIcon(group.subject);
   return (
     <div className="bg-butter border border-border rounded-3xl p-5">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-sage/20 flex items-center justify-center text-xl">
-          {icon}
-        </div>
+        <Glyph icon={icon} tone={tone} size="lg" shape="squircle" />
         <div className="flex-1 min-w-0">
           <h3 className="font-bold">{group.name}</h3>
           <p className="text-sm text-chocolate">{group.subject} · {group.member_count} member{group.member_count !== 1 ? "s" : ""}</p>
@@ -123,7 +117,7 @@ export default function GroupsPage() {
     <div className="py-6 space-y-6">
       <div>
         <h1 className="font-display font-extrabold text-2xl italic">Study Groups</h1>
-        <p className="text-chocolate text-sm">Study together, grow together 🌿</p>
+        <p className="text-chocolate text-sm">Study together, grow together <InlineGlyph icon={Sprout} tone="sage" /></p>
       </div>
 
       {/* MY GROUPS */}
@@ -133,7 +127,7 @@ export default function GroupsPage() {
           <p className="text-center text-chocolate text-sm py-6">Loading…</p>
         ) : myGroups.length === 0 ? (
           <div className="bg-butter border border-border rounded-3xl p-8 text-center">
-            <p className="text-3xl">🌿</p>
+            <Glyph icon={Sprout} tone="sage" size="lg" />
             <p className="text-chocolate text-sm mt-2">No groups yet — create or join one below.</p>
           </div>
         ) : (

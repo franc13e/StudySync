@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Users } from "lucide-react";
+import { Plus, Trash2, Users, BookOpen } from "lucide-react";
 import { schedule as scheduleApi, groups as groupsApi } from "../services/api";
+import Glyph from "../components/Glyph";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 // Theme colours a class can be tagged with (stored as hex on the block).
@@ -164,7 +165,7 @@ export default function SchedulePage() {
         <p className="text-center text-chocolate text-sm py-8">Loading…</p>
       ) : todayBlocks.length === 0 ? (
         <div className="bg-butter border border-border rounded-3xl p-10 text-center">
-          <p className="text-3xl">📚</p>
+          <Glyph icon={BookOpen} tone="lavender" size="lg" />
           <p className="text-chocolate text-sm mt-2">No classes on {DAYS[activeDay]}.</p>
         </div>
       ) : (

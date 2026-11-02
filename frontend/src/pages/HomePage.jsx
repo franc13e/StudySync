@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Flame, Check, Star, Pause, Play, ClipboardList, NotebookPen, Sprout } from "lucide-react";
 import { streaks as streaksApi } from "../services/api";
+import Glyph, { InlineGlyph } from "../components/Glyph";
+import FrogMark from "../components/FrogMark";
+import { subjectIcon } from "../components/subjectIcons";
 
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -27,10 +31,10 @@ function StreakCard({ streak }) {
     <div className="bg-espresso rounded-3xl p-5 text-white">
       <p className="text-white/70 text-sm font-medium">Current Streak</p>
       <div className="flex items-center gap-4 mt-2">
-        <span className="text-4xl">🐸</span>
+        <FrogMark size={44} />
         <div>
           <p className="font-display font-extrabold text-4xl leading-none">{days} <span className="text-lg font-semibold">days</span></p>
-          <p className="text-white/70 text-sm mt-0.5">Ribbit! Keep it up! 🔥</p>
+          <p className="text-white/70 text-sm mt-0.5">Ribbit! Keep it up! <InlineGlyph icon={Flame} className="text-sunset" /></p>
         </div>
       </div>
       {/* XP bar */}
@@ -79,7 +83,7 @@ function WeeklyDots({ streak }) {
                   : "bg-inactive text-chocolate/60"
               }`}
             >
-              {logged ? "✓" : isToday ? "★" : ""}
+              {logged ? <Check size={16} strokeWidth={3} aria-label="Logged" /> : isToday ? <Star size={14} fill="currentColor" aria-label="Today" /> : null}
             </div>
             <span className="text-xs font-medium text-chocolate/70">{label}</span>
           </div>
@@ -161,7 +165,11 @@ function PomodoroTimer({ onComplete }) {
               onClick={() => setRunning(!running)}
               className="bg-espresso text-white font-semibold rounded-full px-5 py-2 text-sm hover:opacity-90 transition flex items-center gap-1.5"
             >
-              {running ? "⏸ Pause" : "▶ Start Focus"}
+              {running ? (
+                <><Pause size={14} fill="currentColor" aria-hidden="true" /> Pause</>
+              ) : (
+                <><Play size={14} fill="currentColor" aria-hidden="true" /> Start Focus</>
+              )}
             </button>
             {totalSeconds < 25 * 60 && (
               <button onClick={reset} className="text-chocolate text-sm font-medium px-3">
@@ -176,6 +184,8 @@ function PomodoroTimer({ onComplete }) {
 }
 
 // ── Tasks (local) ──────────────────────────────────────────
+const TASK_FALLBACK = { icon: NotebookPen, tone: "sage" };
+
 function getStoredTasks() {
   try {
     return JSON.parse(localStorage.getItem("studysync_tasks") || "[]");
@@ -209,7 +219,6 @@ function TasksList() {
   };
 
   const pending = tasks.filter((t) => !t.done);
-  const icons = { Math: "📐", Biology: "🧬", History: "📜", CS: "💻", default: "📝" };
 
   return (
     <div>
@@ -242,7 +251,7 @@ function TasksList() {
       <div className="space-y-2">
         {tasks.length === 0 ? (
           <div className="bg-butter border border-border rounded-2xl p-6 text-center">
-            <p className="text-3xl">📋</p>
+            <Glyph icon={ClipboardList} tone="sunset" size="lg" />
             <p className="text-chocolate text-sm mt-2">No tasks yet — tap + to add one.</p>
           </div>
         ) : (
@@ -251,9 +260,7 @@ function TasksList() {
               key={t.id}
               className={`bg-butter border border-border rounded-2xl p-4 flex items-center gap-3 transition ${t.done ? "opacity-50" : ""}`}
             >
-              <div className="w-10 h-10 rounded-xl bg-sage/20 flex items-center justify-center text-lg">
-                {icons[t.subject] || icons.default}
-              </div>
+              <Glyph {...subjectIcon(t.subject, TASK_FALLBACK)} size="md" shape="squircle" />
               <div className="flex-1 min-w-0">
                 <p className={`font-semibold text-sm ${t.done ? "line-through" : ""}`}>{t.label}</p>
                 {t.subject && <p className="text-xs text-chocolate">{t.subject}</p>}
@@ -264,7 +271,7 @@ function TasksList() {
                   t.done ? "bg-sage border-sage text-white" : "border-border"
                 }`}
               >
-                {t.done && <span className="text-xs">✓</span>}
+                {t.done && <Check size={14} strokeWidth={3} aria-hidden="true" />}
               </button>
             </div>
           ))
@@ -294,7 +301,7 @@ export default function HomePage() {
       <div>
         <p className="text-sm text-chocolate">{formatDate()}</p>
         <h1 className="font-display font-extrabold text-2xl mt-0.5">
-          {getGreeting()}, {user?.username}! 🌿
+          {getGreeting()}, {user?.username}! <InlineGlyph icon={Sprout} tone="sage" />
         </h1>
       </div>
 

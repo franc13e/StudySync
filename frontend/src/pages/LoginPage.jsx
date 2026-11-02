@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import FrogMark from "../components/FrogMark";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ export default function LoginPage() {
       <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-petal/30 blur-[100px] pointer-events-none" />
       <div className="w-full max-w-sm relative">
         <div className="text-center mb-8">
-          <span className="text-5xl">🐸</span>
+          <FrogMark size={60} className="mx-auto" />
           <h1 className="font-display font-extrabold text-3xl mt-3">Welcome back!</h1>
           <p className="text-chocolate mt-1">Sign in to your cozy study space</p>
         </div>

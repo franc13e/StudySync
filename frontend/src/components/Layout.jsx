@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
+import { Home, CalendarDays, Users, Sparkles } from "lucide-react";
 
 const navItems = [
-  { to: "/", label: "Home", emoji: "🏠" },
-  { to: "/schedule", label: "Schedule", emoji: "📅" },
-  { to: "/groups", label: "Groups", emoji: "👥" },
-  { to: "/stats", label: "Stats", emoji: "✨" },
+  { to: "/", label: "Home", icon: Home },
+  { to: "/schedule", label: "Schedule", icon: CalendarDays },
+  { to: "/groups", label: "Groups", icon: Users },
+  { to: "/stats", label: "Stats", icon: Sparkles },
 ];
 
 export default function Layout({ children }) {
@@ -14,7 +15,7 @@ export default function Layout({ children }) {
 
       <nav className="fixed bottom-0 inset-x-0 z-30 bg-canvas/90 backdrop-blur-md border-t border-border">
         <div className="max-w-lg mx-auto flex justify-around items-center py-2 px-2">
-          {navItems.map(({ to, label, emoji }) => (
+          {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -29,7 +30,7 @@ export default function Layout({ children }) {
             >
               {({ isActive }) => (
                 <>
-                  <span className="text-base">{emoji}</span>
+                  <Icon size={18} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
                   {isActive && <span>{label}</span>}
                 </>
               )}

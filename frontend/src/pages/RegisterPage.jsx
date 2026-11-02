@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Sprout } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import Glyph from "../components/Glyph";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -30,7 +32,7 @@ export default function RegisterPage() {
       <div className="fixed bottom-10 right-10 w-[400px] h-[400px] rounded-full bg-lavender/30 blur-[100px] pointer-events-none" />
       <div className="w-full max-w-sm relative">
         <div className="text-center mb-8">
-          <span className="text-5xl">🌱</span>
+          <Glyph icon={Sprout} tone="sage" size="xl" />
           <h1 className="font-display font-extrabold text-3xl mt-3">Join the crew</h1>
           <p className="text-chocolate mt-1">Set up your study nook in seconds</p>
         </div>
