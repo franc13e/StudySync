@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import FrogMark from "../components/FrogMark";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
+      await login(identifier, password);
       navigate("/");
     } catch (err) {
       setError(err.message || "Login failed");
@@ -40,10 +40,11 @@ export default function LoginPage() {
             <div className="bg-petal/40 text-espresso text-sm rounded-2xl px-4 py-2.5 font-medium">{error}</div>
           )}
           <div>
-            <label className="block text-sm font-semibold mb-1.5">Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+            <label htmlFor="login-identifier" className="block text-sm font-semibold mb-1.5">Email or username</label>
+            <input id="login-identifier" type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required
+              autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false}
               className="w-full bg-canvas border border-border rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sage/50 transition"
-              placeholder="you@uni.edu" />
+              placeholder="you@uni.edu or your username" />
           </div>
           <div>
             <label className="block text-sm font-semibold mb-1.5">Password</label>

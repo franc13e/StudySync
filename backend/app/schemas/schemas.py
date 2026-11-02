@@ -1,7 +1,7 @@
 from datetime import datetime, date, timedelta
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field, StringConstraints, field_validator, model_validator
 
 
 def _text(min_length: int, max_length: int):
@@ -20,7 +20,8 @@ class UserCreate(BaseModel):
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    # Email address or username. Older app versions send it as "email".
+    login: _text(1, 255) = Field(validation_alias=AliasChoices("login", "email"))
     password: Annotated[str, StringConstraints(max_length=128)]
 
 

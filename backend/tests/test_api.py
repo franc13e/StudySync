@@ -16,6 +16,45 @@ def test_register_login_and_me(client):
     assert me["username"] == "ada"
 
 
+def test_email_is_case_insensitive(client):
+    body = {"email": "Grace@Example.com", "username": "grace", "password": "correct horse"}
+    assert client.post("/api/auth/register", json=body).status_code == 200
+    dup = {**body, "email": "grace@example.com", "username": "grace2"}
+    assert client.post("/api/auth/register", json=dup).status_code == 400
+
+    for email in ["grace@example.com", "GRACE@example.com", "Grace@Example.com"]:
+        r = client.post("/api/auth/login", json={"email": email, "password": "correct horse"})
+        assert r.status_code == 200, email
+
+
+def test_login_with_username(client):
+    body = {"email": "katherine@example.com", "username": "KJohnson", "password": "correct horse"}
+    assert client.post("/api/auth/register", json=body).status_code == 200
+    taken = {**body, "email": "other@example.com", "username": "kjohnson"}
+    assert client.post("/api/auth/register", json=taken).status_code == 400
+
+    for name in ["KJohnson", "kjohnson", " kjohnson "]:
+        r = client.post("/api/auth/login", json={"login": name, "password": "correct horse"})
+        assert r.status_code == 200, name
+    wrong = client.post("/api/auth/login", json={"login": "kjohnson", "password": "nope"})
+    assert wrong.status_code == 401
+    # Older app versions still send the field as "email"
+    legacy = client.post("/api/auth/login", json={"email": "katherine@example.com", "password": "correct horse"})
+    assert legacy.status_code == 200
+
+
+def test_login_finds_mixed_case_accounts_created_before_lowercasing(client):
+    from app.database import SessionLocal
+    from app.models.models import User
+    from app.services.auth import hash_password
+
+    with SessionLocal() as db:
+        db.add(User(email="Linus@example.com", username="linus", hashed_password=hash_password("correct horse")))
+        db.commit()
+    r = client.post("/api/auth/login", json={"email": "linus@example.com", "password": "correct horse"})
+    assert r.status_code == 200
+
+
 def test_requires_auth(client):
     assert client.get("/api/groups").status_code == 401
     assert client.get("/api/groups", headers={"Authorization": "Bearer garbage"}).status_code == 401

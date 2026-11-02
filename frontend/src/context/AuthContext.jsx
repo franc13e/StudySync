@@ -20,8 +20,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const login = async (email, password) => {
-    const { access_token } = await auth.login({ email, password });
+  // `identifier` is an email address or a username. It is also sent as `email`
+  // so email sign-in keeps working against an API that hasn't redeployed yet.
+  const login = async (identifier, password) => {
+    const { access_token } = await auth.login({ login: identifier, email: identifier, password });
     localStorage.setItem("studysync_token", access_token);
     const me = await auth.me();
     setUser(me);
