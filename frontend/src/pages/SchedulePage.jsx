@@ -176,14 +176,14 @@ export default function SchedulePage() {
           </div>
 
           <div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="min-w-0">
                 <label className="block text-xs font-semibold text-chocolate mb-1" htmlFor="class-start">Starts</label>
-                <input id="class-start" type="time" step={300} value={form.start} onChange={(e) => setStart(e.target.value)} className={fieldClass} />
+                <input id="class-start" type="time" step={300} value={form.start} onChange={(e) => setStart(e.target.value)} className={`${fieldClass} time-field`} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-semibold text-chocolate mb-1" htmlFor="class-end">Ends</label>
-                <input id="class-end" type="time" step={300} value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} className={fieldClass} />
+                <input id="class-end" type="time" step={300} value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} className={`${fieldClass} time-field`} />
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-2" role="group" aria-label="Quick length">

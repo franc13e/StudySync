@@ -56,3 +56,17 @@ body::after {
 .pb-nav {
   padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
+
+/* iOS gives time inputs a wide built-in minimum, so two side by side spill into each other. */
+.time-field {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  display: block;
+  text-align: left;
+  min-height: 2.75rem;
+}
+.time-field::-webkit-date-and-time-value {
+  text-align: left;
+}
