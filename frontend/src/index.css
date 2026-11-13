@@ -48,3 +48,11 @@ body::after {
 /* Hue slider in the class colour picker */
 .hue-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 9999px; background: #fff; border: 2px solid #3D271D; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
 .hue-slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 9999px; background: #fff; border: 2px solid #3D271D; }
+
+/* Keep the bottom tabs clear of the iPhone home bar, so a tap doesn't swipe the app closed or wake Siri. */
+.nav-safe {
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.pb-nav {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}

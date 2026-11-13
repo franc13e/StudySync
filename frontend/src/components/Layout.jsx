@@ -10,11 +10,11 @@ const navItems = [
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-nav">
       <main className="max-w-lg mx-auto px-5">{children}</main>
 
       <nav className="fixed bottom-0 inset-x-0 z-30 bg-canvas/90 backdrop-blur-md border-t border-border">
-        <div className="max-w-lg mx-auto flex justify-around items-center py-2 px-2">
+        <div className="max-w-lg mx-auto flex justify-around items-center pt-2 px-2 nav-safe">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}

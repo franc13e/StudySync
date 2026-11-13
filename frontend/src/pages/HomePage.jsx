@@ -4,6 +4,7 @@ import { Flame, Check, Star, Pause, Play, ClipboardList, NotebookPen, Sprout } f
 import { streaks as streaksApi } from "../services/api";
 import Glyph, { InlineGlyph } from "../components/Glyph";
 import FrogMark from "../components/FrogMark";
+import AccountMenu from "../components/AccountMenu";
 import { subjectIcon } from "../components/subjectIcons";
 
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -298,11 +299,14 @@ export default function HomePage() {
   return (
     <div className="py-6 space-y-5">
       {/* Header */}
-      <div>
-        <p className="text-sm text-chocolate">{formatDate()}</p>
-        <h1 className="font-display font-extrabold text-2xl mt-0.5">
-          {getGreeting()}, {user?.username}! <InlineGlyph icon={Sprout} tone="sage" />
-        </h1>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm text-chocolate">{formatDate()}</p>
+          <h1 className="font-display font-extrabold text-2xl mt-0.5">
+            {getGreeting()}, {user?.username}! <InlineGlyph icon={Sprout} tone="sage" />
+          </h1>
+        </div>
+        <AccountMenu />
       </div>
 
       <StreakCard streak={streak} />
