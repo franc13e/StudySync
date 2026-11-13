@@ -1,3 +1,4 @@
+import { overlapsHour } from "../lib/classTime";
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Send, Users, CalendarDays, MessageCircle } from "lucide-react";
@@ -113,7 +114,7 @@ function TimetableTab({ groupId }) {
             <div className="p-2 text-right text-chocolate/60 font-medium">{hour}:00</div>
             {DAYS.map((d, dayIndex) => {
               const cell = blocks.filter(
-                (b) => b.day_of_week === dayIndex && b.start_hour <= hour && b.start_hour + b.duration > hour
+                (b) => b.day_of_week === dayIndex && overlapsHour(b, hour)
               );
               return (
                 <div key={d} className="border border-border/40 min-h-[32px] p-0.5 space-y-0.5">

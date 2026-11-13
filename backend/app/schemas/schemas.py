@@ -79,16 +79,28 @@ class GroupJoin(BaseModel):
 
 
 # ── Schedule ──────────────────────────────────────────────────
+MINUTES_PER_DAY = 24 * 60
+
+
 class ScheduleCreate(BaseModel):
     label: _text(1, 100)
     day_of_week: int = Field(ge=0, le=6)  # 0 = Monday
     start_hour: int = Field(ge=0, le=23)
-    duration: int = Field(ge=1, le=12)  # hours
+    start_minute: int = Field(default=0, ge=0, le=59)
+    # Exact length in minutes. Older clients send whole hours in `duration` instead.
+    duration_minutes: int | None = Field(default=None, ge=5, le=12 * 60)
+    duration: int | None = Field(default=None, ge=1, le=12)  # hours
     color: HexColor = "#6366F1"
 
     @model_validator(mode="after")
-    def ends_same_day(self):
-        if self.start_hour + self.duration > 24:
+    def length_and_end(self):
+        if self.duration_minutes is None:
+            if self.duration is None:
+                raise ValueError("Give the class a length")
+            self.duration_minutes = self.duration * 60
+        # Whole hours, rounded up, for the legacy column
+        self.duration = max(1, -(-self.duration_minutes // 60))
+        if self.start_hour * 60 + self.start_minute + self.duration_minutes > MINUTES_PER_DAY:
             raise ValueError("A class must end by midnight")
         return self
 
@@ -101,7 +113,9 @@ class ScheduleOut(BaseModel):
     label: str
     day_of_week: int
     start_hour: int
+    start_minute: int = 0
     duration: int
+    duration_minutes: int
     color: str
     username: str = ""
 

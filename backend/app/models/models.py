@@ -68,7 +68,9 @@ class Schedule(Base):
     label = Column(String(200), nullable=False)
     day_of_week = Column(Integer, nullable=False)  # 0=Mon, 6=Sun
     start_hour = Column(Integer, nullable=False)    # 0-23
-    duration = Column(Integer, nullable=False)      # hours
+    start_minute = Column(Integer, nullable=False, default=0, server_default="0")  # 0-59
+    duration = Column(Integer, nullable=False)      # whole hours, rounded up (kept for older clients)
+    duration_minutes = Column(Integer, nullable=True)  # exact length; null on classes made before minutes existed
     color = Column(String(7), default="#6366F1")
     created_at = Column(DateTime, default=utcnow)
 

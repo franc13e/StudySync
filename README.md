@@ -18,13 +18,17 @@ _The API runs on Render's free tier, so the first request after a quiet spell ca
   <img src="docs/screenshots/groups.png" width="240" alt="Study groups with invite codes">
   <img src="docs/screenshots/chat.png" width="240" alt="Real-time group chat">
   <img src="docs/screenshots/stats.png" width="240" alt="Weekly study hours and time by subject">
+  <img src="docs/screenshots/schedule.png" width="240" alt="Schedule with classes at any time and length">
+  <img src="docs/screenshots/edit-class.png" width="240" alt="Editing a class: day, start and end time, quick lengths, and a custom colour picker">
 </p>
 
 ## Features
 
 - **Study groups**: create a group, share its invite code, and see who's in it
 - **Real-time group chat**: WebSocket chat with persisted message history
-- **Shared timetables**: add your classes, then see every member's schedule in one weekly grid
+- **Shared timetables**: add your classes at any time and length (e.g. 9:30–10:10), edit or move them to another day, then see every member's schedule in one weekly grid
+- **Class colours**: 12 preset colours, or pick your own on a colour square with a hue slider or by typing a hex code
+- **Sign in your way**: with your email or your username, in any capitalisation
 - **Study streaks**: log study sessions and track current / longest streaks
 - **Focus tools**: Pomodoro timer and a quick task list on the home screen
 - **Progress stats**: weekly study hours, time by subject, and achievements
@@ -115,14 +119,15 @@ Tests run against a temporary SQLite database, so no Postgres is needed. They ru
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Create account |
-| POST | `/api/auth/login` | Get JWT token |
+| POST | `/api/auth/login` | Get JWT token (`login` is an email or username) |
 | GET | `/api/auth/me` | Current user profile |
 | GET | `/api/groups` | List user's groups |
 | POST | `/api/groups` | Create a group |
 | POST | `/api/groups/join` | Join a group with an invite code |
 | GET | `/api/groups/{id}/members` | Group members *(members only)* |
 | GET | `/api/schedule` | Get user's timetable |
-| POST | `/api/schedule` | Add schedule block |
+| POST | `/api/schedule` | Add a class (`start_hour`, `start_minute`, `duration_minutes`) |
+| PUT | `/api/schedule/{id}` | Edit a class |
 | DELETE | `/api/schedule/{id}` | Remove block |
 | GET | `/api/schedule/group/{id}` | Combined group timetable *(members only)* |
 | GET | `/api/streaks/me` | Get study streak |

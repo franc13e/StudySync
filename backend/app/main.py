@@ -2,11 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import engine, Base
+from app.database import engine, Base, ensure_columns
 from app.routers import auth, groups, schedule, streaks, chat
 
 # Create tables (use Alembic migrations in production)
 Base.metadata.create_all(bind=engine)
+# create_all doesn't add columns to existing tables, so add the newer ones here
+ensure_columns(engine, "schedules", {
+    "start_minute": "INTEGER NOT NULL DEFAULT 0",
+    "duration_minutes": "INTEGER",
+})
 
 app = FastAPI(
     title="StudySync API",

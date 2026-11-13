@@ -1,3 +1,4 @@
+import { lengthOf } from "../lib/classTime";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Flame, Timer, Star, BookOpen, CheckCircle2, Sparkles } from "lucide-react";
@@ -56,7 +57,7 @@ export default function StatsPage() {
   // Subject breakdown from schedule blocks
   const subjectMap = {};
   blocks.forEach((b) => {
-    subjectMap[b.label] = (subjectMap[b.label] || 0) + b.duration;
+    subjectMap[b.label] = (subjectMap[b.label] || 0) + lengthOf(b) / 60;
   });
   const totalSubjectHours = Object.values(subjectMap).reduce((a, b) => a + b, 0) || 1;
   const subjects = Object.entries(subjectMap)

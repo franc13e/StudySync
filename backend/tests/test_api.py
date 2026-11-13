@@ -93,6 +93,62 @@ def test_schedule_crud(client, make_user):
     assert client.get("/api/schedule", headers=me).json() == []
 
 
+def test_schedule_minutes_and_edit(client, make_user):
+    me, _, _ = make_user()
+    block = client.post("/api/schedule", headers=me, json={
+        "label": "Lab", "day_of_week": 2, "start_hour": 9, "start_minute": 30, "duration_minutes": 40, "color": "#12abEF",
+    }).json()
+    assert (block["start_hour"], block["start_minute"], block["duration_minutes"], block["duration"]) == (9, 30, 40, 1)
+
+    edited = client.put(f"/api/schedule/{block['id']}", headers=me, json={
+        "label": "Chem lab", "day_of_week": 3, "start_hour": 13, "start_minute": 15, "duration_minutes": 100, "color": "#000000",
+    })
+    assert edited.status_code == 200, edited.text
+    e = edited.json()
+    assert (e["label"], e["day_of_week"], e["start_hour"], e["start_minute"], e["duration_minutes"], e["duration"]) == ("Chem lab", 3, 13, 15, 100, 2)
+    assert client.get("/api/schedule", headers=me).json()[0]["label"] == "Chem lab"
+
+    # Someone else can't edit it, and bad edits are rejected
+    other, _, _ = make_user()
+    assert client.put(f"/api/schedule/{block['id']}", headers=other, json={**e, "label": "Mine"}).status_code == 404
+    assert client.put(f"/api/schedule/{block['id']}", headers=me, json={**e, "start_hour": 23, "start_minute": 30, "duration_minutes": 45}).status_code == 422
+
+
+def test_schedule_hours_still_work(client, make_user):
+    me, _, _ = make_user()
+    block = client.post("/api/schedule", headers=me, json={
+        "label": "Lecture", "day_of_week": 0, "start_hour": 22, "duration": 2,
+    }).json()
+    assert (block["start_minute"], block["duration_minutes"]) == (0, 120)
+
+
+def test_old_classes_without_minutes_are_read_as_whole_hours(client, make_user):
+    from app.database import SessionLocal
+    from app.models.models import Schedule
+    me, _, uid = make_user()
+    with SessionLocal() as db:
+        db.add(Schedule(user_id=uid, label="Old", day_of_week=1, start_hour=8, duration=3, color="#FFC285"))
+        db.commit()
+    [b] = client.get("/api/schedule", headers=me).json()
+    assert (b["start_minute"], b["duration_minutes"]) == (0, 180)
+
+
+def test_ensure_columns_adds_missing_ones(tmp_path):
+    from sqlalchemy import create_engine, inspect, text
+    from app.database import ensure_columns
+    eng = create_engine(f"sqlite:///{tmp_path / 'old.db'}")
+    with eng.begin() as conn:
+        conn.execute(text("CREATE TABLE schedules (id INTEGER PRIMARY KEY, start_hour INTEGER NOT NULL)"))
+        conn.execute(text("INSERT INTO schedules (start_hour) VALUES (9)"))
+    cols = {"start_minute": "INTEGER NOT NULL DEFAULT 0", "duration_minutes": "INTEGER"}
+    assert ensure_columns(eng, "schedules", cols) == ["start_minute", "duration_minutes"]
+    assert ensure_columns(eng, "schedules", cols) == []
+    assert {c["name"] for c in inspect(eng).get_columns("schedules")} >= set(cols)
+    with eng.connect() as conn:
+        assert conn.execute(text("SELECT start_minute, duration_minutes FROM schedules")).one() == (0, None)
+    assert ensure_columns(eng, "nope", cols) == []
+
+
 def test_study_log_updates_streak(client, make_user):
     me, _, _ = make_user()
     assert client.post("/api/streaks/log", headers=me, json={"duration_minutes": 45}).status_code == 200
@@ -154,6 +210,10 @@ def test_members_do_not_expose_email(client, make_user):
     {"label": "X", "day_of_week": 0, "start_hour": 22, "duration": 3},
     {"label": "  ", "day_of_week": 0, "start_hour": 9, "duration": 1},
     {"label": "X", "day_of_week": 0, "start_hour": 9, "duration": 1, "color": "red;x:y"},
+    {"label": "X", "day_of_week": 0, "start_hour": 9, "start_minute": 60, "duration_minutes": 30},
+    {"label": "X", "day_of_week": 0, "start_hour": 9, "duration_minutes": 0},
+    {"label": "X", "day_of_week": 0, "start_hour": 23, "start_minute": 40, "duration_minutes": 30},
+    {"label": "X", "day_of_week": 0, "start_hour": 9},
 ])
 def test_schedule_validation(client, make_user, payload):
     me, _, _ = make_user()

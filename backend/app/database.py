@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from app.config import settings
@@ -19,6 +19,20 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
     pass
+
+
+def ensure_columns(engine, table: str, columns: dict[str, str]) -> list[str]:
+    """Adds any of `columns` ({name: SQL type}) missing from an existing table; returns the ones added."""
+    insp = inspect(engine)
+    if not insp.has_table(table):
+        return []
+    have = {c["name"] for c in insp.get_columns(table)}
+    missing = [name for name in columns if name not in have]
+    if missing:
+        with engine.begin() as conn:
+            for name in missing:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {columns[name]}"))
+    return missing
 
 
 def get_db():

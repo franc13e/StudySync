@@ -9,10 +9,18 @@ from app.services.auth import get_current_user, require_group_member
 router = APIRouter(prefix="/api/schedule", tags=["schedule"])
 
 
+def _out(block: Schedule, username: str) -> ScheduleOut:
+    data = {c.name: getattr(block, c.name) for c in Schedule.__table__.columns}
+    data["start_minute"] = data.get("start_minute") or 0
+    # Classes made before minutes existed only have whole hours
+    data["duration_minutes"] = data.get("duration_minutes") or data["duration"] * 60
+    return ScheduleOut(username=username, **data)
+
+
 @router.get("", response_model=list[ScheduleOut])
 def get_my_schedule(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     blocks = db.query(Schedule).filter(Schedule.user_id == user.id).all()
-    return [ScheduleOut(username=user.username, **{c.name: getattr(b, c.name) for c in Schedule.__table__.columns}) for b in blocks]
+    return [_out(b, user.username) for b in blocks]
 
 
 @router.post("", response_model=ScheduleOut)
@@ -21,7 +29,19 @@ def add_block(data: ScheduleCreate, user: User = Depends(get_current_user), db: 
     db.add(block)
     db.commit()
     db.refresh(block)
-    return ScheduleOut(username=user.username, **{c.name: getattr(block, c.name) for c in Schedule.__table__.columns})
+    return _out(block, user.username)
+
+
+@router.put("/{block_id}", response_model=ScheduleOut)
+def update_block(block_id: int, data: ScheduleCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    block = db.query(Schedule).filter(Schedule.id == block_id, Schedule.user_id == user.id).first()
+    if not block:
+        raise HTTPException(status_code=404, detail="Block not found")
+    for key, value in data.model_dump().items():
+        setattr(block, key, value)
+    db.commit()
+    db.refresh(block)
+    return _out(block, user.username)
 
 
 @router.delete("/{block_id}")
@@ -46,8 +66,5 @@ def get_group_schedule(group_id: int, user: User = Depends(get_current_user), db
     result = []
     for b in blocks:
         u = db.get(User, b.user_id)
-        result.append(ScheduleOut(
-            username=u.username if u else "",
-            **{c.name: getattr(b, c.name) for c in Schedule.__table__.columns},
-        ))
+        result.append(_out(b, u.username if u else ""))
     return result
